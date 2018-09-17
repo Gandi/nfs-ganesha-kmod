@@ -95,7 +95,11 @@ int sys_fhreadlink(struct thread *td, void *params)
                 return (error);
 
 	/* code taken from kern_readlinkat */
+#ifdef VV_READLINK
 	if (vp->v_type != VLNK && (vp->v_vflag & VV_READLINK) == 0)
+#else
+	if (vp->v_type != VLNK)
+#endif
 		error = EINVAL;
 	else {
 		aiov.iov_base = uap->buf;

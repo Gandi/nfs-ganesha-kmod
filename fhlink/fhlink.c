@@ -132,9 +132,15 @@ again:
 		return (EPERM);		/* POSIX */
 	}
 
+#ifdef CAP_LINKAT_TARGET
 	NDINIT_ATRIGHTS(&nd, CREATE,
 	    LOCKPARENT | SAVENAME | AUDITVNODE2 | NOCACHE, UIO_USERSPACE, uap->to, uap->tofd,
 	    cap_rights_init(&rights, CAP_LINKAT_TARGET), td);
+#else
+	NDINIT_ATRIGHTS(&nd, CREATE,
+	    LOCKPARENT | SAVENAME | AUDITVNODE2 | NOCACHE, UIO_USERSPACE, uap->to, uap->tofd,
+	    cap_rights_init(&rights, CAP_LINKAT), td);
+#endif
 	if ((error = namei(&nd)) == 0) {
 		if (nd.ni_vp != NULL) {
 			NDFREE(&nd, NDF_ONLY_PNBUF);
