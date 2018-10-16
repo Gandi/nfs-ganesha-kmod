@@ -84,6 +84,7 @@ int sys_getfhat(struct thread *td, void *params)
 		error = fgetvp(td, uap->fd, cap_rights_init(&rights, CAP_PREAD), &vp);
 		if (error != 0)
 			return (error);
+		vn_lock(vp, LK_EXCLUSIVE | LK_RETRY);
 	}
 
         bzero(&fh, sizeof(fh));
