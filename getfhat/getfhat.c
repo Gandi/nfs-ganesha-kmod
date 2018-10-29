@@ -71,7 +71,7 @@ int sys_getfhat(struct thread *td, void *params)
 		return (error);
 
 	if (uap->path) {
-		NDINIT_AT(&nd, LOOKUP, (uap->flag & AT_SYMLINK_NOFOLLOW) ? NOFOLLOW : FOLLOW | LOCKLEAF | AUDITVNODE1,
+		NDINIT_AT(&nd, LOOKUP, (uap->flag & AT_SYMLINK_NOFOLLOW ? NOFOLLOW : FOLLOW) | LOCKLEAF | AUDITVNODE1,
 			UIO_USERSPACE, uap->path, uap->fd, td);
 
 		error = namei(&nd);
