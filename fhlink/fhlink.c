@@ -121,11 +121,12 @@ again:
 	if ((mp = vfs_busyfs(&fh.fh_fsid)) == NULL)
 		return (ESTALE);
 
-	error = VFS_FHTOVP(mp, &fh.fh_fid, LK_EXCLUSIVE, &vp);
+	error = VFS_FHTOVP(mp, &fh.fh_fid, LK_SHARED, &vp);
         vfs_unbusy(mp);
         if (error != 0)
                 return (error);
 
+	VOP_UNLOCK(vp, 0);
 	/* code taken from kern_linkat */
 	if (vp->v_type == VDIR) {
 		vput(vp);
