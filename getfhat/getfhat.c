@@ -61,7 +61,6 @@ int sys_getfhat(struct thread *td, void *params)
 	struct nameidata nd;
 	fhandle_t fh;
 	struct vnode *vp;
-	cap_rights_t rights;
 	int error;
 
 	uap = (struct getfhat_args*)params;
@@ -71,7 +70,7 @@ int sys_getfhat(struct thread *td, void *params)
 		return (error);
 
 	NDINIT_AT(&nd, LOOKUP, (uap->flag & AT_SYMLINK_NOFOLLOW ? NOFOLLOW : FOLLOW) | LOCKLEAF | AUDITVNODE1,
-		UIO_USERSPACE, uap->path ? uap->path : ".", uap->fd, td);
+		uap->path ? UIO_USERSPACE : UIO_SYSSPACE, uap->path ? uap->path : ".", uap->fd, td);
 
 	error = namei(&nd);
 	if (error != 0)
