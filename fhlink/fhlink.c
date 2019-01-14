@@ -129,7 +129,7 @@ again:
 	VOP_UNLOCK(vp, 0);
 	/* code taken from kern_linkat */
 	if (vp->v_type == VDIR) {
-		vput(vp);
+		vrele(vp);
 		return (EPERM);		/* POSIX */
 	}
 
@@ -150,7 +150,7 @@ again:
 			else
 				vput(nd.ni_dvp);
 			vrele(nd.ni_vp);
-			vput(vp);
+			vrele(vp);
 			return (EEXIST);
 		} else if (nd.ni_dvp->v_mount != vp->v_mount) {
 			/*
@@ -160,13 +160,9 @@ again:
 			 */
 			NDFREE(&nd, NDF_ONLY_PNBUF);
 			vput(nd.ni_dvp);
-			vput(vp);
+			vrele(vp);
 			return (EXDEV);
-		} else {
-			/*
-			 * if we got there, vp should be locked thanks to VFS_FHTOVP 
-			 * if ((error = vn_lock(vp, LK_EXCLUSIVE)) == 0) {
-			 */
+		} else if ((error = vn_lock(vp, LK_EXCLUSIVE)) == 0) {
 			error = can_hardlink(vp, td->td_ucred);
 #ifdef MAC
 			if (error == 0)
@@ -191,12 +187,19 @@ again:
 				goto again;
 			}
 			error = VOP_LINK(nd.ni_dvp, vp, &nd.ni_cnd);
+			VOP_UNLOCK(vp, 0);
 			vput(nd.ni_dvp);
 			vn_finished_write(mp);
 			NDFREE(&nd, NDF_ONLY_PNBUF);
 		}
+		else {
+			vput(nd.ni_dvp);
+			NDFREE(&nd, NDF_ONLY_PNBUF);
+			vrele(vp);
+			goto again;
+		}
 	}
-	vput(vp);
+	vrele(vp);
 	return (error);
 }
 
